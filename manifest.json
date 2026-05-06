@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Pusat Komando Groq (VIP FINAL)",
+  "version": "9.9",
+  "description": "Mesin Scraper Stake & H2H Visual dengan Engine Groq Super Hemat Token.",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://api.groq.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["*://*.stake.com/*", "*://stake.com/*", "<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ]
+}
