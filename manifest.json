@@ -14,7 +14,7 @@
   ],
   "content_scripts": [
     {
-      "matches": ["*://*.stake.com/*", "*://stake.com/*", "<all_urls>"],
+      "matches": ["*://*.stake.com/*", "*://stake.com/*"],
       "js": ["content.js"],
       "run_at": "document_start"
     }

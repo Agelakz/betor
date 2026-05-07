@@ -11,6 +11,32 @@ widget.id = "betor-widget";
 widget.innerHTML = '<div id="betor-container" style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;width:340px;background:linear-gradient(145deg,#1a1a2e,#16213e);border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.4);overflow:hidden;border:1px solid rgba(255,255,255,0.1);"><div id="betor-header" style="background:linear-gradient(90deg,#ff6b35,#f7931e);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;"><div style="display:flex;align-items:center;gap:8px;"><span style="font-size:20px;">BETOR</span><span style="background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:10px;font-size:10px;color:#fff;">AI</span></div><span id="betor-toggle" style="color:#fff;font-size:18px;font-weight:bold;">▼</span></div><div id="betor-body" style="padding:16px;"><select id="api-provider" style="width:100%;padding:10px 12px;margin-bottom:12px;background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.15);border-radius:10px;font-size:13px;cursor:pointer;"><option value="cohere">Cohere (1000/mo FREE)</option><option value="groq">Groq ($5 free)</option><option value="together">Together ($5 free)</option><option value="ollama">Ollama (Lokal)</option></select><input type="password" id="hud-api-key" placeholder="Paste API Key..." style="width:100%;padding:10px 12px;margin-bottom:12px;background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.15);border-radius:10px;font-size:13px;box-sizing:border-box;"><input type="text" id="api-endpoint" placeholder="http://localhost:11434" style="width:100%;padding:10px 12px;margin-bottom:12px;background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.15);border-radius:10px;font-size:13px;box-sizing:border-box;display:none;"><div style="display:flex;gap:8px;margin-bottom:10px;"><button id="ai-btn-record" style="flex:1;padding:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">REKAM</button></div><div style="display:flex;gap:8px;margin-bottom:10px;"><button id="ai-btn-analyze" style="flex:2;padding:12px;background:linear-gradient(135deg,#11998e,#38ef7d);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">ANALYZE</button><button id="ai-btn-test" style="flex:1;padding:12px;background:rgba(255,255,255,0.15);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;">TEST</button></div><div style="display:flex;gap:8px;margin-bottom:10px;"><button id="ai-btn-clear" style="flex:1;padding:10px;background:rgba(239,68,68,0.2);color:#ef4444;border:1px solid #ef4444;border-radius:10px;font-size:12px;cursor:pointer;">DEL</button><button id="ai-btn-save" style="flex:1;padding:10px;background:rgba(245,158,11,0.2);color:#f59e0b;border:1px solid #f59e0b;border-radius:10px;font-size:12px;cursor:pointer;">SAVE</button><button id="ai-btn-history" style="flex:1;padding:10px;background:rgba(99,102,241,0.2);color:#818cf8;border:1px solid #6366f1;border-radius:10px;font-size:12px;cursor:pointer;">HIST</button></div><button id="ai-btn-export" style="width:100%;padding:10px;background:rgba(139,92,246,0.2);color:#a78bfa;border:1px solid #8b5cf6;border-radius:10px;font-size:12px;cursor:pointer;">COPY</button></div><div id="ai-result-screen" style="background:#0d0d1a;padding:14px;border-radius:12px;height:180px;overflow-y:auto;color:#22c55e;font-size:12px;font-family:SF Mono,Monaco,Courier New,monospace;line-height:1.5;border:1px solid rgba(34,197,94,0.2);margin:8px 16px 16px;">[ BETOR AI ]\nPilih provider > Rekam > Analisa</div><div id="ai-history-panel" style="display:none;background:rgba(0,0,0,0.3);padding:10px;border-radius:8px;margin:0 16px 16px;max-height:120px;overflow-y:auto;"></div></div></div>';
 
 Object.assign(widget.style,{position:"fixed",bottom:"20px",right:"20px",zIndex:"2147483647"});
+// Make widget draggable
+var isDragging = false;
+var dragOffsetX, dragOffsetY;
+
+widget.addEventListener('mousedown', function(e){
+    if(e.target.closest('#betor-header')){
+        isDragging = true;
+        dragOffsetX = e.clientX - widget.offsetLeft;
+        dragOffsetY = e.clientY - widget.offsetTop;
+        widget.style.cursor = 'move';
+    }
+});
+
+document.addEventListener('mousemove', function(e){
+    if(isDragging){
+        widget.style.left = (e.clientX - dragOffsetX) + 'px';
+        widget.style.top = (e.clientY - dragOffsetY) + 'px';
+        widget.style.bottom = 'auto';
+    }
+});
+
+document.addEventListener('mouseup', function(){
+    isDragging = false;
+    widget.style.cursor = 'default';
+});
+
 
 function enforceHUD(){
     if(document.body && !document.getElementById("betor-widget")){
