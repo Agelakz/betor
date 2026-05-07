@@ -45,7 +45,7 @@ async function getLiveH2H() {
 }
 
 function getPrompt() {
-    return "ATURAN:\n1. WAJIB 100% BAHASA INDONESIA!\n2. TIDAK PAKAI TAG BERPIKIR.\n3. BLACKLIST: Liga Turki = NO BET.\n\nTUGAS: Analisis odds, H2H, FORM. JANGAN MEMAKSA!\n\nFORMAT:\nMATCH: [Home] vs [Away]\nH2H & FORM: [statistik]\nODDS: [H%|D%|A%]\n1x2: [HOME/DRAW/AWAY/NO BET]\nSkor: [estimasi]\nOU: [OVER/UNDER@odds]\nBTTS: [YES/NO@odds]\nRisk: [RENDAH/SEDANG/TINGGI]";
+    return "ATURAN MUTLAK:\n1. WAJIB 100% BAHASA INDONESIA!\n2. DILARANG MENGGUNAKAN TAG BERPIKIR.\n3. BLACKLIST LIGA: Liga Turki = NO BET.\n\nPERAN: Analis Olahraga Elit, Spesialis Value Bet.\nTUGAS: Analisis odds, H2H, FORM. JANGAN MEMAKSAKAN PREDIKSI!\n\nATURAN MATEMATIS:\n1. Prob=(1/Odds)x100%\n2. Simulasi Poisson\n3. NO BET jika margin tipis\n\nFORMAT LAPORAN WAJIB:\nMATCH: [Home] vs [Away]\nH2H & FORM: [statistik W/D/L]\nODDS IMPLIKIT: [H%|D%|A%]\nPROBABILITAS SKOR: [3 skor]\n1x2: [H%|D%|A%]\nPREDIKSI: [HOME/DRAW/AWAY/NO BET]\nSkor: [estimasi]\nOU: [OVER/UNDER@odds]\nBTTS: [YES/NO@odds]\nValue: [ada/tidak ada]\nRisk: [RENDAH/SEDANG/TINGGI]";
 }
 
 async function analyzeWithAPI(key, data, provider) {
