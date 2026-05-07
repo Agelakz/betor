@@ -1,3 +1,6 @@
+
+// DEBUG: Start
+console.log('[BETOR] Loading...');
 // Betor AI Extension
 var scrapedMemory = [];
 var activeApiKey = "";
@@ -38,7 +41,7 @@ document.addEventListener('mouseup', function(){
 });
 
 
-function enforceHUD(){
+function enforceHUD(){ console.log("[BETOR] enforceHUD called");
     if(document.body && !document.getElementById("betor-widget")){
         document.body.appendChild(widget);
         if(typeof chrome !== "undefined" && chrome.storage){

@@ -7,16 +7,24 @@
     "default_popup": "popup.html"
   },
   "permissions": [
-    "storage"
+    "storage",
+    "activeTab"
   ],
   "host_permissions": [
-    "https://api.groq.com/*"
+    "https://api.groq.com/*",
+    "https://api.together.ai/*",
+    "https://api.cohere.ai/*"
   ],
   "content_scripts": [
     {
-      "matches": ["*://*.stake.com/*", "*://stake.com/*"],
-      "js": ["content.js"],
-      "run_at": "document_start"
+      "matches": [
+        "*://*.stake.com/*",
+        "*://stake.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
     }
   ]
 }
