@@ -1,4 +1,4 @@
-// Groq Stake Extension - Multi-API + Test Mode
+// Betor Extension - Multi-API Support
 var scrapedMemory = [];
 var activeApiKey = "";
 var isMinimized = false;
@@ -8,7 +8,7 @@ var savedAnalysis = [];
 // Widget
 var widget = document.createElement("div");
 widget.id = "ai-command-widget";
-widget.innerHTML = '<div id="ai-widget-container" style="background:#111827;color:#fff;border:1px solid #374151;border-radius:8px;width:320px;"><div id="ai-btn-toggle" style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #374151;cursor:pointer;background:#1f2937;"><strong style="color:#f59e0b;">BETOR AI</strong><span id="ai-toggle-icon">[-]</span></div><div id="ai-widget-body" style="padding:12px;"><select id="api-provider" style="width:93%;padding:5px;margin-bottom:5px;background:#374151;color:#fff;border:1px solid #4b5563;"><option value="groq">Groq (Default)</option><option value="together">Together AI ($5 free)</option><option value="ollama">Ollama (Lokal)</option></select><input type="password" id="hud-api-key" placeholder="API Key" style="width:93%;padding:8px;margin-bottom:8px;background:#374151;color:#fff;"><input type="text" id="api-endpoint" placeholder="Endpoint (Ollama)" style="width:93%;padding:8px;margin-bottom:8px;background:#374151;color:#fff;display:none;"><button id="ai-btn-record" style="width:100%;margin-bottom:8px;background:#3b82f6;color:#fff;border:none;padding:10px;cursor:pointer;">[REKAM]</button><div style="display:flex;gap:5px;margin-bottom:8px;"><button id="ai-btn-analyze" style="flex:2;background:#10b981;color:#fff;border:none;padding:8px;cursor:pointer;">[ANALYZE]</button><button id="ai-btn-test" style="flex:1;background:#6b7280;color:#fff;border:none;padding:8px;cursor:pointer;">[TEST]</button></div><div style="display:flex;gap:5px;margin-bottom:8px;"><button id="ai-btn-clear" style="flex:1;background:#ef4444;color:#fff;border:none;padding:8px;cursor:pointer;">[DEL]</button><button id="ai-btn-save" style="flex:1;background:#f59e0b;color:#fff;border:none;padding:8px;cursor:pointer;">[SAVE]</button><button id="ai-btn-history" style="flex:1;background:#6366f1;color:#fff;border:none;padding:8px;cursor:pointer;">[HIST]</button></div><button id="ai-btn-export" style="width:100%;margin-bottom:8px;background:#8b5cf6;color:#fff;border:none;padding:8px;cursor:pointer;">[COPY]</button></div><div id="ai-result-screen" style="background:#000;padding:8px;border-radius:4px;height:200px;overflow-y:auto;white-space:pre-wrap;color:#34d399;font-family:monospace;">[BETOR AI READY]\nPilih Provider > Rekam > Test/Analisa</div><div id="ai-history-panel" style="display:none;background:#1f2937;padding:8px;margin-top:8px;max-height:150px;overflow-y:auto;"></div></div></div>';
+widget.innerHTML = '<div id="ai-widget-container" style="background:#111827;color:#fff;border:1px solid #374151;border-radius:8px;width:320px;"><div id="ai-btn-toggle" style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #374151;cursor:pointer;background:#1f2937;"><strong style="color:#f59e0b;">BETOR AI</strong><span id="ai-toggle-icon">[-]</span></div><div id="ai-widget-body" style="padding:12px;"><select id="api-provider" style="width:93%;padding:5px;margin-bottom:5px;background:#374151;color:#fff;border:1px solid #4b5563;"><option value="groq">Groq ($5 free)</option><option value="together">Together ($5 free)</option><option value="cohere">Cohere (1000/mo FREE)</option><option value="ollama">Ollama (Lokal)</option></select><input type="password" id="hud-api-key" placeholder="API Key" style="width:93%;padding:8px;margin-bottom:8px;background:#374151;color:#fff;"><input type="text" id="api-endpoint" placeholder="Endpoint (Ollama)" style="width:93%;padding:8px;margin-bottom:8px;background:#374151;color:#fff;display:none;"><button id="ai-btn-record" style="width:100%;margin-bottom:8px;background:#3b82f6;color:#fff;border:none;padding:10px;cursor:pointer;">[REKAM]</button><div style="display:flex;gap:5px;margin-bottom:8px;"><button id="ai-btn-analyze" style="flex:2;background:#10b981;color:#fff;border:none;padding:8px;cursor:pointer;">[ANALYZE]</button><button id="ai-btn-test" style="flex:1;background:#6b7280;color:#fff;border:none;padding:8px;cursor:pointer;">[TEST]</button></div><div style="display:flex;gap:5px;margin-bottom:8px;"><button id="ai-btn-clear" style="flex:1;background:#ef4444;color:#fff;border:none;padding:8px;cursor:pointer;">[DEL]</button><button id="ai-btn-save" style="flex:1;background:#f59e0b;color:#fff;border:none;padding:8px;cursor:pointer;">[SAVE]</button><button id="ai-btn-history" style="flex:1;background:#6366f1;color:#fff;border:none;padding:8px;cursor:pointer;">[HIST]</button></div><button id="ai-btn-export" style="width:100%;margin-bottom:8px;background:#8b5cf6;color:#fff;border:none;padding:8px;cursor:pointer;">[COPY]</button></div><div id="ai-result-screen" style="background:#000;padding:8px;border-radius:4px;height:200px;overflow-y:auto;white-space:pre-wrap;color:#34d399;font-family:monospace;">[BETOR AI]\nGroq | Together | Cohere | Ollama</div><div id="ai-history-panel" style="display:none;background:#1f2937;padding:8px;margin-top:8px;max-height:150px;overflow-y:auto;"></div></div></div>';
 
 Object.assign(widget.style,{position:"fixed",bottom:"20px",left:"20px",zIndex:"2147483647"});
 
@@ -40,9 +40,7 @@ function setLoading(isLoading){
 }
 
 function updateHudUI(msg, append){
-    var mem = document.getElementById("ai-mem-status");
     var screen = document.getElementById("ai-result-screen");
-    if(mem) mem.innerText = "Mem:" + scrapedMemory.length;
     if(screen && msg){
         if(append){
             var t = new Date().toLocaleTimeString();
@@ -65,7 +63,7 @@ function scrapeStakeData(){
             if(txt && !isNaN(txt) && parseFloat(txt) > 1.01 && parseFloat(txt) < 15) btns.push(b);
         });
     }
-    if(btns.length === 0) throw new Error("Data tidak ditemukan");
+    if(btns.length === 0) throw new Error("Data tdk ditemukan");
     var groups = new Map();
     btns.forEach(function(btn){
         var parent = btn.closest(".market") || btn.parentElement;
@@ -100,33 +98,23 @@ async function getLiveH2H(){
 }
 
 function getPrompt(){
-    return "HITUNG SENDIRI! Jangan asal ambil.\n\nLANGKAH:\n1. Prob = (1/Odds)x100%\n2. Risk: >50%=RENDAH, 30-50%=SEDANG, <30%=TINGGI\n3. Kelly: prob x odds >1 = VALUE, <1 = SKIP.\n\nFORMAT WAJIB:\nRECOMMENDED: [HOME/DRAW/AWAY]@odds - prob% - alasan\nOU: [OVER/UNDER]@odds - prob% - alasan\nBTTS: [YES/NO]@odds - prob% - alasan\nRISK: [RENDAH/SEDANG/TINGGI]\nKELLY: [2%|3%|4%|5%|SKIP]";
+    return "HITUNG SENDIRI!\n1. Prob=(1/Odds)x100%\n2. Risk:>50%=RENDAH,30-50%=SEDANG,<30%=TINGGI\n3.Kelly:prob x odds>1=VALUE,<1=SKIP\n\nFORMAT:\nRECOMMENDED:[HOME/DRAW/AWAY]@odds-prob%-alasan\nOU:[OVER/UNDER]@odds-prob%-alasan\nBTTS:[YES/NO]@odds-prob%-alasan\nRISK:[RENDAH/SEDANG/TINGGI]\nKELLY:[2%|3%|4%|5%|SKIP]";
 }
 
 document.addEventListener("click", async function(e){
     if(e.target && e.target.id === "api-provider"){
         var provider = e.target.value;
         var endpoint = document.getElementById("api-endpoint");
-        if(provider === "ollama"){
-            endpoint.style.display = "block";
-            endpoint.placeholder = "http://localhost:11434";
-        }else{
-            endpoint.style.display = "none";
-        }
+        if(provider === "ollama") endpoint.style.display = "block";
+        else endpoint.style.display = "none";
         return;
     }
     if(e.target && e.target.closest("#ai-btn-toggle")){
         var body = document.getElementById("ai-widget-body");
         var icon = document.getElementById("ai-toggle-icon");
-        if(!isMinimized){
-            body.style.display = "none";
-            icon.innerText = "[+]";
-            isMinimized = true;
-        }else{
-            body.style.display = "block";
-            icon.innerText = "[-]";
-            isMinimized = false;
-        }
+        isMinimized = !isMinimized;
+        body.style.display = isMinimized ? "none" : "block";
+        icon.innerText = isMinimized ? "[+]" : "[-]";
         return;
     }
     if(e.target && e.target.id === "ai-btn-record"){
@@ -137,11 +125,8 @@ document.addEventListener("click", async function(e){
             var d = scrapeStakeData();
             scrapedMemory.push(d);
             updateHudUI("OK:" + d.split("\n").length + " market", true);
-        }catch(err){
-            updateHudUI("ERR:" + err.message, true);
-        }finally{
-            setLoading(false);
-        }
+        }catch(err){ updateHudUI("ERR:" + err.message, true); }
+        finally{ setLoading(false); }
         return;
     }
     if(e.target && e.target.id === "ai-btn-clear"){
@@ -152,10 +137,7 @@ document.addEventListener("click", async function(e){
     if(e.target && e.target.id === "ai-btn-save"){
         var screen = document.getElementById("ai-result-screen");
         var txt = screen ? screen.innerText : "";
-        if(txt.length < 50){
-            updateHudUI("WARN:No data", true);
-            return;
-        }
+        if(txt.length < 50){ updateHudUI("WARN:No data", true); return; }
         savedAnalysis.push({id: Date.now(), waktu: new Date().toLocaleString(), hasil: txt});
         if(chrome && chrome.storage){
             chrome.storage.local.set({groqSavedAnalysis: savedAnalysis}, function(){
@@ -166,21 +148,18 @@ document.addEventListener("click", async function(e){
     }
     if(e.target && e.target.id === "ai-btn-history"){
         var panel = document.getElementById("ai-history-panel");
-        if(panel && panel.style.display === "none"){
-            if(chrome && chrome.storage){
-                chrome.storage.local.get(["groqSavedAnalysis"], function(res){
-                    savedAnalysis = res.groqSavedAnalysis || [];
-                    var html = savedAnalysis.length === 0 ? "<div>Empty</div>" : "";
-                    savedAnalysis.slice().reverse().forEach(function(it){
-                        html += "<div onclick='loadH(" + it.id + ")' style='cursor:pointer;padding:5px;margin:3px;background:#374151;'>" + it.waktu + "</div>";
-                    });
-                    panel.innerHTML = html;
-                    panel.style.display = "block";
+        var show = panel && panel.style.display === "none";
+        if(show && chrome && chrome.storage){
+            chrome.storage.local.get(["groqSavedAnalysis"], function(res){
+                savedAnalysis = res.groqSavedAnalysis || [];
+                var html = savedAnalysis.length === 0 ? "<div>Empty</div>" : "";
+                savedAnalysis.slice().reverse().forEach(function(it){
+                    html += "<div onclick='loadH(" + it.id + ")' style='cursor:pointer;padding:5px;margin:3px;background:#374151;'>" + it.waktu + "</div>";
                 });
-            }
-        }else if(panel){
-            panel.style.display = "none";
-        }
+                panel.innerHTML = html;
+                panel.style.display = "block";
+            });
+        }else if(panel) panel.style.display = "none";
         return;
     }
     window.loadH = function(id){
@@ -190,16 +169,13 @@ document.addEventListener("click", async function(e){
             if(s) s.innerText = it.hasil;
             var p = document.getElementById("ai-history-panel");
             if(p) p.style.display = "none";
-            updateHudUI("Loaded", true);
         }
     };
     if(e.target && e.target.id === "ai-btn-export"){
         var s = document.getElementById("ai-result-screen");
         var t = s ? s.innerText : "";
-        try{
-            navigator.clipboard.writeText(t);
-            updateHudUI("Copied!", true);
-        }catch(err){
+        try{ navigator.clipboard.writeText(t); updateHudUI("Copied!", true); }
+        catch(err){
             var ta = document.createElement("textarea");
             ta.value = t;
             document.body.appendChild(ta);
@@ -215,18 +191,12 @@ document.addEventListener("click", async function(e){
         try{
             var input = document.getElementById("hud-api-key");
             activeApiKey = input ? input.value.trim() : "";
-            setLoading(true);
             var h2h = await getLiveH2H();
             var data = scrapedMemory.join("\n\n") + "\n\nH2H:" + h2h;
             var provider = document.getElementById("api-provider").value;
             var prompt = getPrompt();
-            document.getElementById("ai-result-screen").innerText = "[TEST MODE]\nProvider: " + provider + "\n\n=== PROMPT ===\n" + prompt + "\n\n=== DATA ===\n" + data.substring(0, 800) + "...\n\n[Tidak bakar API]";
-            updateHudUI("TEST OK", false);
-        }catch(err){
-            updateHudUI("ERR:" + err.message, true);
-        }finally{
-            setLoading(false);
-        }
+            document.getElementById("ai-result-screen").innerText = "[TEST]\nProvider:" + provider + "\n\nPROMPT:\n" + prompt + "\n\nDATA:\n" + data.substring(0, 500) + "...\n\n[Tidak bakar API]";
+        }catch(err){ updateHudUI("ERR:" + err.message, true); }
         return;
     }
     if(e.target && e.target.id === "ai-btn-analyze"){
@@ -243,50 +213,53 @@ document.addEventListener("click", async function(e){
             var provider = document.getElementById("api-provider").value;
             var endpoint = document.getElementById("api-endpoint").value;
             await analyzeWithAPI(activeApiKey, data, provider, endpoint);
-        }catch(err){
-            updateHudUI("ERR:" + err.message, true);
-        }finally{
-            setLoading(false);
-        }
+        }catch(err){ updateHudUI("ERR:" + err.message, true); }
+        finally{ setLoading(false); }
         return;
     }
 });
 
 async function analyzeWithAPI(key, data, provider, endpoint){
     var prompt = getPrompt();
-    var url, body, modelName, headers;
+    var url, body, modelName, headers = {"Content-Type": "application/json"};
     
     if(provider === "ollama"){
         url = (endpoint || "http://localhost:11434") + "/api/chat";
         body = {model: "llama3.1", messages: [{role: "system", content: prompt}, {role: "user", content: "DATA:\n" + data}], stream: false};
         modelName = "llama3.1";
-        headers = {"Content-Type": "application/json"};
     }else if(provider === "together"){
-        // Together AI - $5 free!
         url = "https://api.together.ai/v1/chat/completions";
         body = {model: "Meta-Llama-3.1-70B-Instruct", messages: [{role: "system", content: prompt}, {role: "user", content: "DATA:\n" + data}], max_tokens: 1500, temperature: 0};
         modelName = "Llama-3.1-70B";
-        headers = {"Content-Type": "application/json", "Authorization": "Bearer " + key};
+        headers["Authorization"] = "Bearer " + key;
+    }else if(provider === "cohere"){
+        // Cohere - FREE 1000 calls/month!
+        url = "https://api.cohere.ai/v1/chat";
+        body = {model: "command-r-plus", message: "PROMPT:\n" + prompt + "\n\nDATA:\n" + data, max_tokens: 1500};
+        modelName = "Command R+";
+        headers["Authorization"] = "Bearer " + key;
     }else{
         // Groq default
         url = "https://api.groq.com/openai/v1/chat/completions";
         body = {model: "llama-3.3-70b-versatile", messages: [{role: "system", content: prompt}, {role: "user", content: "DATA:\n" + data}], temperature: 0, max_tokens: 1500};
         modelName = "llama-3.3-70b";
-        headers = {"Content-Type": "application/json", "Authorization": "Bearer " + key};
+        headers["Authorization"] = "Bearer " + key;
     }
     
     try{
         var res = await fetch(url, {method: "POST", headers: headers, body: JSON.stringify(body)});
         var d = await res.json();
-        
         var content = "";
+        
         if(provider === "ollama"){
             content = d.message ? d.message.content : "";
+        }else if(provider === "cohere"){
+            content = d.text || (d.message ? d.message.content : "") || (d.generations && d.generations[0] ? d.generations[0].text : "") || "Error: " + JSON.stringify(d).substring(0, 200);
         }else{
-            content = d.choices && d.choices[0] ? d.choices[0].message.content : (d.error ? d.error.message : "Error: " + JSON.stringify(d));
+            content = d.choices && d.choices[0] ? d.choices[0].message.content : (d.error ? d.error.message : "Error: " + JSON.stringify(d).substring(0, 200));
         }
         
-        document.getElementById("ai-result-screen").innerText = "[PROVIDER:" + provider + "]\nModel: " + modelName + "\n\n" + content;
+        document.getElementById("ai-result-screen").innerText = "[Provider:" + provider + "]\nModel:" + modelName + "\n\n" + content;
     }catch(e){
         document.getElementById("ai-result-screen").innerText = "ERROR: " + e.message;
     }
