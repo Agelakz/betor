@@ -350,8 +350,8 @@ async function analyzeWithGroq(key, pageData) {
 2. DILARANG MENGGUNAKAN TAG THINKING.
 3. BLACKLIST: Turki, Israel = NO BET.
 
-PERAN: Analis Olahraga Pro, Value Bet OU & AH Expert.
-TUGAS: Analisis SEMUA market (1x2, O/U, AH, BTTS), H2H, FORM.
+PERAN: Analis Olahraga Pro, All Markets Expert.
+TUGAS: Analisis SEMUA market (1x2, O/U, AH, BTTS, DC, GG), H2H, FORM.
 
 ATURAN MATEMATIS:
 1. ODDS ke Probabilitas Implisit SEMUA market.
@@ -360,19 +360,21 @@ ATURAN MATEMATIS:
 
 FORMAT LAPORAN:
 MATCH: [Home] vs [Away]
-H2H: W-D-L pertunjukan & 5 match terakhir
+H2H: W-D-L & 5 match terakhir kedua tim
 IMPLIED PROB:
   - 1x2: H% | D% | A%
-  - OU 2.5: O% | U%
+  - OU variants: O1.5|U1.5, O2.0|U2.0, O2.5|U2.5, O3.0|U3.0, O3.5|U3.5, O4.0|U4.0
   - BTTS: Y% | N%
-POISSON: 3 Skor + xG
-PREDIKSI:
+  - DC: 1X|12|X2
+POISSON: 3 Skor + xG + Expected Score
+PREDIKSI AKHIR:
   - 1x2: HOME/DRAW/AWAY or NO BET
-  - OU 2.5: OVER/UNDER
-  - BTTS: YES/NO
-  - AH: HANDICAP
-VALUE BET: urut highest value
-RISK: RENDAH/SEDANG/TINGGI + Kelly`;
+  - BEST OU: [line] @[odds] - [OVER/UNDER]
+  - BTTS: YES/NO @[odds]
+  - AH: [handicap] @[odds]
+  - DC: [double chance]
+VALUE BET: urut highest value dgn odds + alasan
+RISK: RENDAH/SEDANG/TINGGI + Kelly [2-5%] atau SKIP`;
 
   const groqModels = [
     "llama-3.3-70b-versatile", 
