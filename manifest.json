@@ -19,7 +19,13 @@
     {
       "matches": [
         "*://*.stake.com/*",
-        "*://stake.com/*"
+        "*://stake.com/*",
+        "*://*.stake.krd/*",
+        "*://stake.krd/*",
+        "*://*.stake.ee/*",
+        "*://stake.ee/*",
+        "*://*.stake.bet/*",
+        "*://stake.bet/*"
       ],
       "js": [
         "content.js"
