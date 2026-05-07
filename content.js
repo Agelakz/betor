@@ -8,7 +8,7 @@ var savedAnalysis = [];
 // Widget
 var widget = document.createElement("div");
 widget.id = "ai-command-widget";
-widget.innerHTML = '<div id="ai-widget-container" style="background:#111827;color:#fff;border:1px solid #374151;border-radius:8px;width:320px;"><div id="ai-btn-toggle" style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #374151;cursor:pointer;background:#1f2937;"><strong style="color:#f59e0b;">GROQ VIP</strong><span id="ai-toggle-icon">[-]</span></div><div id="ai-widget-body" style="padding:12px;"><select id="api-provider" style="width:93%;padding:5px;margin-bottom:5px;background:#374151;color:#fff;border:1px solid #4b5563;"><option value="groq">Groq (Default)</option><option value="ollama">Ollama (Lokal)</option><option value="openai">OpenAI</option></select><input type="password" id="hud-api-key" placeholder="API Key" style="width:93%;padding:8px;margin-bottom:8px;background:#374151;color:#fff;"><input type="text" id="api-endpoint" placeholder="Endpoint URL" style="width:93%;padding:8px;margin-bottom:8px;background:#374151;color:#fff;display:none;"><button id="ai-btn-record" style="width:100%;margin-bottom:8px;background:#3b82f6;color:#fff;border:none;padding:10px;cursor:pointer;">[RECORD]</button><div style="display:flex;gap:5px;margin-bottom:8px;"><button id="ai-btn-analyze" style="flex:2;background:#10b981;color:#fff;border:none;padding:8px;cursor:pointer;">[ANALYZE]</button><button id="ai-btn-test" style="flex:1;background:#6b7280;color:#fff;border:none;padding:8px;cursor:pointer;">[TEST]</button></div><div style="display:flex;gap:5px;margin-bottom:8px;"><button id="ai-btn-clear" style="flex:1;background:#ef4444;color:#fff;border:none;padding:8px;cursor:pointer;">[DEL]</button><button id="ai-btn-save" style="flex:1;background:#f59e0b;color:#fff;border:none;padding:8px;cursor:pointer;">[SAVE]</button><button id="ai-btn-history" style="flex:1;background:#6366f1;color:#fff;border:none;padding:8px;cursor:pointer;">[HIST]</button></div><button id="ai-btn-export" style="width:100%;margin-bottom:8px;background:#8b5cf6;color:#fff;border:none;padding:8px;cursor:pointer;">[COPY]</button></div><div id="ai-result-screen" style="background:#000;padding:8px;border-radius:4px;height:200px;overflow-y:auto;white-space:pre-wrap;color:#34d399;font-family:monospace;">[READY]\n\n[TEST] = Preview Prompt utan bakar API</div><div id="ai-history-panel" style="display:none;background:#1f2937;padding:8px;margin-top:8px;max-height:150px;overflow-y:auto;"></div></div></div>';
+widget.innerHTML = '<div id="ai-widget-container" style="background:#111827;color:#fff;border:1px solid #374151;border-radius:8px;width:320px;"><div id="ai-btn-toggle" style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #374151;cursor:pointer;background:#1f2937;"><strong style="color:#f59e0b;">BETOR AI</strong><span id="ai-toggle-icon">[-]</span></div><div id="ai-widget-body" style="padding:12px;"><select id="api-provider" style="width:93%;padding:5px;margin-bottom:5px;background:#374151;color:#fff;border:1px solid #4b5563;"><option value="groq">Groq (Default)</option><option value="together">Together AI ($5 free)</option><option value="ollama">Ollama (Lokal)</option></select><input type="password" id="hud-api-key" placeholder="API Key" style="width:93%;padding:8px;margin-bottom:8px;background:#374151;color:#fff;"><input type="text" id="api-endpoint" placeholder="Endpoint (Ollama)" style="width:93%;padding:8px;margin-bottom:8px;background:#374151;color:#fff;display:none;"><button id="ai-btn-record" style="width:100%;margin-bottom:8px;background:#3b82f6;color:#fff;border:none;padding:10px;cursor:pointer;">[REKAM]</button><div style="display:flex;gap:5px;margin-bottom:8px;"><button id="ai-btn-analyze" style="flex:2;background:#10b981;color:#fff;border:none;padding:8px;cursor:pointer;">[ANALYZE]</button><button id="ai-btn-test" style="flex:1;background:#6b7280;color:#fff;border:none;padding:8px;cursor:pointer;">[TEST]</button></div><div style="display:flex;gap:5px;margin-bottom:8px;"><button id="ai-btn-clear" style="flex:1;background:#ef4444;color:#fff;border:none;padding:8px;cursor:pointer;">[DEL]</button><button id="ai-btn-save" style="flex:1;background:#f59e0b;color:#fff;border:none;padding:8px;cursor:pointer;">[SAVE]</button><button id="ai-btn-history" style="flex:1;background:#6366f1;color:#fff;border:none;padding:8px;cursor:pointer;">[HIST]</button></div><button id="ai-btn-export" style="width:100%;margin-bottom:8px;background:#8b5cf6;color:#fff;border:none;padding:8px;cursor:pointer;">[COPY]</button></div><div id="ai-result-screen" style="background:#000;padding:8px;border-radius:4px;height:200px;overflow-y:auto;white-space:pre-wrap;color:#34d399;font-family:monospace;">[BETOR AI READY]\nPilih Provider > Rekam > Test/Analisa</div><div id="ai-history-panel" style="display:none;background:#1f2937;padding:8px;margin-top:8px;max-height:150px;overflow-y:auto;"></div></div></div>';
 
 Object.assign(widget.style,{position:"fixed",bottom:"20px",left:"20px",zIndex:"2147483647"});
 
@@ -110,9 +110,6 @@ document.addEventListener("click", async function(e){
         if(provider === "ollama"){
             endpoint.style.display = "block";
             endpoint.placeholder = "http://localhost:11434";
-        }else if(provider === "openai"){
-            endpoint.style.display = "block";
-            endpoint.placeholder = "https://api.openai.com/v1";
         }else{
             endpoint.style.display = "none";
         }
@@ -213,7 +210,6 @@ document.addEventListener("click", async function(e){
         }
         return;
     }
-    // TEST MODE - Preview Prompt ONLY, no API call!
     if(e.target && e.target.id === "ai-btn-test"){
         if(scrapedMemory.length === 0) throw new Error("Rekam dulu");
         try{
@@ -224,8 +220,8 @@ document.addEventListener("click", async function(e){
             var data = scrapedMemory.join("\n\n") + "\n\nH2H:" + h2h;
             var provider = document.getElementById("api-provider").value;
             var prompt = getPrompt();
-            document.getElementById("ai-result-screen").innerText = "[TEST MODE - PREVIEW]\n\nProvider: " + provider + "\n\n=== SYSTEM PROMPT ===\n" + prompt + "\n\n=== USER DATA ===\n" + data.substring(0, 1000) + "...\n\n[Tidak jadi bakar API!]";
-            updateHudUI("TEST Preview", false);
+            document.getElementById("ai-result-screen").innerText = "[TEST MODE]\nProvider: " + provider + "\n\n=== PROMPT ===\n" + prompt + "\n\n=== DATA ===\n" + data.substring(0, 800) + "...\n\n[Tidak bakar API]";
+            updateHudUI("TEST OK", false);
         }catch(err){
             updateHudUI("ERR:" + err.message, true);
         }finally{
@@ -258,26 +254,28 @@ document.addEventListener("click", async function(e){
 
 async function analyzeWithAPI(key, data, provider, endpoint){
     var prompt = getPrompt();
-    var url, body, modelName;
+    var url, body, modelName, headers;
     
     if(provider === "ollama"){
         url = (endpoint || "http://localhost:11434") + "/api/chat";
         body = {model: "llama3.1", messages: [{role: "system", content: prompt}, {role: "user", content: "DATA:\n" + data}], stream: false};
         modelName = "llama3.1";
-    }else if(provider === "openai"){
-        url = (endpoint || "https://api.openai.com/v1") + "/chat/completions";
-        body = {model: "gpt-4o", messages: [{role: "system", content: prompt}, {role: "user", content: "DATA:\n" + data}], max_tokens: 1500};
-        modelName = "gpt-4o";
+        headers = {"Content-Type": "application/json"};
+    }else if(provider === "together"){
+        // Together AI - $5 free!
+        url = "https://api.together.ai/v1/chat/completions";
+        body = {model: "Meta-Llama-3.1-70B-Instruct", messages: [{role: "system", content: prompt}, {role: "user", content: "DATA:\n" + data}], max_tokens: 1500, temperature: 0};
+        modelName = "Llama-3.1-70B";
+        headers = {"Content-Type": "application/json", "Authorization": "Bearer " + key};
     }else{
+        // Groq default
         url = "https://api.groq.com/openai/v1/chat/completions";
         body = {model: "llama-3.3-70b-versatile", messages: [{role: "system", content: prompt}, {role: "user", content: "DATA:\n" + data}], temperature: 0, max_tokens: 1500};
         modelName = "llama-3.3-70b";
+        headers = {"Content-Type": "application/json", "Authorization": "Bearer " + key};
     }
     
     try{
-        var headers = {"Content-Type": "application/json"};
-        if(provider !== "ollama") headers["Authorization"] = "Bearer " + key;
-        
         var res = await fetch(url, {method: "POST", headers: headers, body: JSON.stringify(body)});
         var d = await res.json();
         
@@ -285,10 +283,10 @@ async function analyzeWithAPI(key, data, provider, endpoint){
         if(provider === "ollama"){
             content = d.message ? d.message.content : "";
         }else{
-            content = d.choices && d.choices[0] ? d.choices[0].message.content : (d.error ? d.error.message : "Error");
+            content = d.choices && d.choices[0] ? d.choices[0].message.content : (d.error ? d.error.message : "Error: " + JSON.stringify(d));
         }
         
-        document.getElementById("ai-result-screen").innerText = "[PROVIDER:" + provider + " MODEL:" + modelName + "]\n\n" + content;
+        document.getElementById("ai-result-screen").innerText = "[PROVIDER:" + provider + "]\nModel: " + modelName + "\n\n" + content;
     }catch(e){
         document.getElementById("ai-result-screen").innerText = "ERROR: " + e.message;
     }
