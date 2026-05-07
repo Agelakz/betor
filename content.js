@@ -49,7 +49,7 @@ async function getLiveH2H() {
 }
 
 function getPrompt() {
-    return "Analisa bets: HOME/DRAW/AWAY, OU, BTTS";
+    return "You are a sports betting analyst. Analyze the given odds data and provide detailed predictions. For each market (1x2, Over/Under, BTTS), give: 1) Probability calculation, 2) Risk level (LOW/MEDIUM/HIGH), 3) Kelly criterion, 4) Final recommendation with odds. Format clearly with headers. BE DETAILED and COMPLETE in your analysis.";
 }
 
 async function analyzeWithAPI(key, data, provider) {
