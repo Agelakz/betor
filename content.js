@@ -1,4 +1,4 @@
-// Groq Stake Extension - Multi-API Support
+// Groq Stake Extension - Multi-API + Test Mode
 var scrapedMemory = [];
 var activeApiKey = "";
 var isMinimized = false;
@@ -8,7 +8,7 @@ var savedAnalysis = [];
 // Widget
 var widget = document.createElement("div");
 widget.id = "ai-command-widget";
-widget.innerHTML = '<div id="ai-widget-container" style="background:#111827;color:#fff;border:1px solid #374151;border-radius:8px;width:320px;"><div id="ai-btn-toggle" style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #374151;cursor:pointer;background:#1f2937;"><strong style="color:#f59e0b;">GROQ VIP</strong><span id="ai-toggle-icon">[-]</span></div><div id="ai-widget-body" style="padding:12px;"><select id="api-provider" style="width:93%;padding:5px;margin-bottom:5px;background:#374151;color:#fff;border:1px solid #4b5563;"><option value="groq">Groq (Default)</option><option value="ollama">Ollama (Lokal/Gratis)</option><option value="openai">OpenAI</option></select><input type="password" id="hud-api-key" placeholder="API Key" style="width:93%;padding:8px;margin-bottom:8px;background:#374151;color:#fff;"><input type="text" id="api-endpoint" placeholder="Endpoint URL" style="width:93%;padding:8px;margin-bottom:8px;background:#374151;color:#fff;display:none;"><button id="ai-btn-record" style="width:100%;margin-bottom:8px;background:#3b82f6;color:#fff;border:none;padding:10px;cursor:pointer;">[RECORD]</button><div style="display:flex;gap:5px;margin-bottom:8px;"><button id="ai-btn-analyze" style="flex:2;background:#10b981;color:#fff;border:none;padding:8px;cursor:pointer;">[ANALYZE]</button><button id="ai-btn-clear" style="flex:1;background:#ef4444;color:#fff;border:none;padding:8px;cursor:pointer;">[DEL]</button></div><div style="display:flex;gap:5px;margin-bottom:8px;"><button id="ai-btn-save" style="flex:1;background:#f59e0b;color:#fff;border:none;padding:8px;cursor:pointer;">[SAVE]</button><button id="ai-btn-history" style="flex:1;background:#6366f1;color:#fff;border:none;padding:8px;cursor:pointer;">[HIST]</button><button id="ai-btn-export" style="flex:1;background:#8b5cf6;color:#fff;border:none;padding:8px;cursor:pointer;">[COPY]</button></div><div id="ai-result-screen" style="background:#000;padding:8px;border-radius:4px;height:200px;overflow-y:auto;white-space:pre-wrap;color:#34d399;font-family:monospace;">[READY]</div><div id="ai-history-panel" style="display:none;background:#1f2937;padding:8px;margin-top:8px;max-height:150px;overflow-y:auto;"></div></div></div>';
+widget.innerHTML = '<div id="ai-widget-container" style="background:#111827;color:#fff;border:1px solid #374151;border-radius:8px;width:320px;"><div id="ai-btn-toggle" style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #374151;cursor:pointer;background:#1f2937;"><strong style="color:#f59e0b;">GROQ VIP</strong><span id="ai-toggle-icon">[-]</span></div><div id="ai-widget-body" style="padding:12px;"><select id="api-provider" style="width:93%;padding:5px;margin-bottom:5px;background:#374151;color:#fff;border:1px solid #4b5563;"><option value="groq">Groq (Default)</option><option value="ollama">Ollama (Lokal)</option><option value="openai">OpenAI</option></select><input type="password" id="hud-api-key" placeholder="API Key" style="width:93%;padding:8px;margin-bottom:8px;background:#374151;color:#fff;"><input type="text" id="api-endpoint" placeholder="Endpoint URL" style="width:93%;padding:8px;margin-bottom:8px;background:#374151;color:#fff;display:none;"><button id="ai-btn-record" style="width:100%;margin-bottom:8px;background:#3b82f6;color:#fff;border:none;padding:10px;cursor:pointer;">[RECORD]</button><div style="display:flex;gap:5px;margin-bottom:8px;"><button id="ai-btn-analyze" style="flex:2;background:#10b981;color:#fff;border:none;padding:8px;cursor:pointer;">[ANALYZE]</button><button id="ai-btn-test" style="flex:1;background:#6b7280;color:#fff;border:none;padding:8px;cursor:pointer;">[TEST]</button></div><div style="display:flex;gap:5px;margin-bottom:8px;"><button id="ai-btn-clear" style="flex:1;background:#ef4444;color:#fff;border:none;padding:8px;cursor:pointer;">[DEL]</button><button id="ai-btn-save" style="flex:1;background:#f59e0b;color:#fff;border:none;padding:8px;cursor:pointer;">[SAVE]</button><button id="ai-btn-history" style="flex:1;background:#6366f1;color:#fff;border:none;padding:8px;cursor:pointer;">[HIST]</button></div><button id="ai-btn-export" style="width:100%;margin-bottom:8px;background:#8b5cf6;color:#fff;border:none;padding:8px;cursor:pointer;">[COPY]</button></div><div id="ai-result-screen" style="background:#000;padding:8px;border-radius:4px;height:200px;overflow-y:auto;white-space:pre-wrap;color:#34d399;font-family:monospace;">[READY]\n\n[TEST] = Preview Prompt utan bakar API</div><div id="ai-history-panel" style="display:none;background:#1f2937;padding:8px;margin-top:8px;max-height:150px;overflow-y:auto;"></div></div></div>';
 
 Object.assign(widget.style,{position:"fixed",bottom:"20px",left:"20px",zIndex:"2147483647"});
 
@@ -30,7 +30,7 @@ setInterval(enforceHUD, 1000);
 
 function setLoading(isLoading){
     var screen = document.getElementById("ai-result-screen");
-    var btns = ["ai-btn-analyze","ai-btn-record","ai-btn-export","ai-btn-save","ai-btn-history","ai-btn-clear"];
+    var btns = ["ai-btn-analyze","ai-btn-record","ai-btn-export","ai-btn-save","ai-btn-history","ai-btn-clear","ai-btn-test"];
     isProcessing = isLoading;
     btns.forEach(function(id){
         var btn = document.getElementById(id);
@@ -97,6 +97,10 @@ async function getLiveH2H(){
     }catch(e){
         return "INFO:Error-" + e.message;
     }
+}
+
+function getPrompt(){
+    return "HITUNG SENDIRI! Jangan asal ambil.\n\nLANGKAH:\n1. Prob = (1/Odds)x100%\n2. Risk: >50%=RENDAH, 30-50%=SEDANG, <30%=TINGGI\n3. Kelly: prob x odds >1 = VALUE, <1 = SKIP.\n\nFORMAT WAJIB:\nRECOMMENDED: [HOME/DRAW/AWAY]@odds - prob% - alasan\nOU: [OVER/UNDER]@odds - prob% - alasan\nBTTS: [YES/NO]@odds - prob% - alasan\nRISK: [RENDAH/SEDANG/TINGGI]\nKELLY: [2%|3%|4%|5%|SKIP]";
 }
 
 document.addEventListener("click", async function(e){
@@ -209,6 +213,26 @@ document.addEventListener("click", async function(e){
         }
         return;
     }
+    // TEST MODE - Preview Prompt ONLY, no API call!
+    if(e.target && e.target.id === "ai-btn-test"){
+        if(scrapedMemory.length === 0) throw new Error("Rekam dulu");
+        try{
+            var input = document.getElementById("hud-api-key");
+            activeApiKey = input ? input.value.trim() : "";
+            setLoading(true);
+            var h2h = await getLiveH2H();
+            var data = scrapedMemory.join("\n\n") + "\n\nH2H:" + h2h;
+            var provider = document.getElementById("api-provider").value;
+            var prompt = getPrompt();
+            document.getElementById("ai-result-screen").innerText = "[TEST MODE - PREVIEW]\n\nProvider: " + provider + "\n\n=== SYSTEM PROMPT ===\n" + prompt + "\n\n=== USER DATA ===\n" + data.substring(0, 1000) + "...\n\n[Tidak jadi bakar API!]";
+            updateHudUI("TEST Preview", false);
+        }catch(err){
+            updateHudUI("ERR:" + err.message, true);
+        }finally{
+            setLoading(false);
+        }
+        return;
+    }
     if(e.target && e.target.id === "ai-btn-analyze"){
         if(isProcessing) return;
         try{
@@ -233,7 +257,7 @@ document.addEventListener("click", async function(e){
 });
 
 async function analyzeWithAPI(key, data, provider, endpoint){
-    var prompt = "HITUNG SENDIRI! Jangan asal ambil.\n\nLANGKAH:\n1. Prob = (1/Odds)x100%\n2. Risk: >50%=RENDAH, 30-50%=SEDANG, <30%=TINGGI\n3. Kelly: prob x odds >1 = VALUE, <1 = SKIP.\n\nFORMAT WAJIB:\nRECOMMENDED: [HOME/DRAW/AWAY]@odds - prob% - alasan\nOU: [OVER/UNDER]@odds - prob% - alasan\nBTTS: [YES/NO]@odds - prob% - alasan\nRISK: [RENDAH/SEDANG/TINGGI]\nKELLY: [2%|3%|4%|5%|SKIP]";
+    var prompt = getPrompt();
     var url, body, modelName;
     
     if(provider === "ollama"){
