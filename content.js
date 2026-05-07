@@ -1,19 +1,19 @@
-// Betor Extension - Multi-API Support
+// Betor AI Extension
 var scrapedMemory = [];
 var activeApiKey = "";
 var isMinimized = false;
 var isProcessing = false;
 var savedAnalysis = [];
 
-// Widget
+// Widget - Modern UI
 var widget = document.createElement("div");
-widget.id = "ai-command-widget";
-widget.innerHTML = '<div id="ai-widget-container" style="background:#111827;color:#fff;border:1px solid #374151;border-radius:8px;width:320px;"><div id="ai-btn-toggle" style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #374151;cursor:pointer;background:#1f2937;"><strong style="color:#f59e0b;">BETOR AI</strong><span id="ai-toggle-icon">[-]</span></div><div id="ai-widget-body" style="padding:12px;"><select id="api-provider" style="width:93%;padding:5px;margin-bottom:5px;background:#374151;color:#fff;border:1px solid #4b5563;"><option value="groq">Groq ($5 free)</option><option value="together">Together ($5 free)</option><option value="cohere">Cohere (1000/mo FREE)</option><option value="ollama">Ollama (Lokal)</option></select><input type="password" id="hud-api-key" placeholder="API Key" style="width:93%;padding:8px;margin-bottom:8px;background:#374151;color:#fff;"><input type="text" id="api-endpoint" placeholder="Endpoint (Ollama)" style="width:93%;padding:8px;margin-bottom:8px;background:#374151;color:#fff;display:none;"><button id="ai-btn-record" style="width:100%;margin-bottom:8px;background:#3b82f6;color:#fff;border:none;padding:10px;cursor:pointer;">[REKAM]</button><div style="display:flex;gap:5px;margin-bottom:8px;"><button id="ai-btn-analyze" style="flex:2;background:#10b981;color:#fff;border:none;padding:8px;cursor:pointer;">[ANALYZE]</button><button id="ai-btn-test" style="flex:1;background:#6b7280;color:#fff;border:none;padding:8px;cursor:pointer;">[TEST]</button></div><div style="display:flex;gap:5px;margin-bottom:8px;"><button id="ai-btn-clear" style="flex:1;background:#ef4444;color:#fff;border:none;padding:8px;cursor:pointer;">[DEL]</button><button id="ai-btn-save" style="flex:1;background:#f59e0b;color:#fff;border:none;padding:8px;cursor:pointer;">[SAVE]</button><button id="ai-btn-history" style="flex:1;background:#6366f1;color:#fff;border:none;padding:8px;cursor:pointer;">[HIST]</button></div><button id="ai-btn-export" style="width:100%;margin-bottom:8px;background:#8b5cf6;color:#fff;border:none;padding:8px;cursor:pointer;">[COPY]</button></div><div id="ai-result-screen" style="background:#000;padding:8px;border-radius:4px;height:200px;overflow-y:auto;white-space:pre-wrap;color:#34d399;font-family:monospace;">[BETOR AI]\nGroq | Together | Cohere | Ollama</div><div id="ai-history-panel" style="display:none;background:#1f2937;padding:8px;margin-top:8px;max-height:150px;overflow-y:auto;"></div></div></div>';
+widget.id = "betor-widget";
+widget.innerHTML = '<div id="betor-container" style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;width:340px;background:linear-gradient(145deg,#1a1a2e,#16213e);border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.4);overflow:hidden;border:1px solid rgba(255,255,255,0.1);"><div id="betor-header" style="background:linear-gradient(90deg,#ff6b35,#f7931e);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;"><div style="display:flex;align-items:center;gap:8px;"><span style="font-size:20px;">BETOR</span><span style="background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:10px;font-size:10px;color:#fff;">AI</span></div><span id="betor-toggle" style="color:#fff;font-size:18px;font-weight:bold;">▼</span></div><div id="betor-body" style="padding:16px;"><select id="api-provider" style="width:100%;padding:10px 12px;margin-bottom:12px;background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.15);border-radius:10px;font-size:13px;cursor:pointer;"><option value="cohere">Cohere (1000/mo FREE)</option><option value="groq">Groq ($5 free)</option><option value="together">Together ($5 free)</option><option value="ollama">Ollama (Lokal)</option></select><input type="password" id="hud-api-key" placeholder="Paste API Key..." style="width:100%;padding:10px 12px;margin-bottom:12px;background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.15);border-radius:10px;font-size:13px;box-sizing:border-box;"><input type="text" id="api-endpoint" placeholder="http://localhost:11434" style="width:100%;padding:10px 12px;margin-bottom:12px;background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.15);border-radius:10px;font-size:13px;box-sizing:border-box;display:none;"><div style="display:flex;gap:8px;margin-bottom:10px;"><button id="ai-btn-record" style="flex:1;padding:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">REKAM</button></div><div style="display:flex;gap:8px;margin-bottom:10px;"><button id="ai-btn-analyze" style="flex:2;padding:12px;background:linear-gradient(135deg,#11998e,#38ef7d);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">ANALYZE</button><button id="ai-btn-test" style="flex:1;padding:12px;background:rgba(255,255,255,0.15);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;">TEST</button></div><div style="display:flex;gap:8px;margin-bottom:10px;"><button id="ai-btn-clear" style="flex:1;padding:10px;background:rgba(239,68,68,0.2);color:#ef4444;border:1px solid #ef4444;border-radius:10px;font-size:12px;cursor:pointer;">DEL</button><button id="ai-btn-save" style="flex:1;padding:10px;background:rgba(245,158,11,0.2);color:#f59e0b;border:1px solid #f59e0b;border-radius:10px;font-size:12px;cursor:pointer;">SAVE</button><button id="ai-btn-history" style="flex:1;padding:10px;background:rgba(99,102,241,0.2);color:#818cf8;border:1px solid #6366f1;border-radius:10px;font-size:12px;cursor:pointer;">HIST</button></div><button id="ai-btn-export" style="width:100%;padding:10px;background:rgba(139,92,246,0.2);color:#a78bfa;border:1px solid #8b5cf6;border-radius:10px;font-size:12px;cursor:pointer;">COPY</button></div><div id="ai-result-screen" style="background:#0d0d1a;padding:14px;border-radius:12px;height:180px;overflow-y:auto;color:#22c55e;font-size:12px;font-family:SF Mono,Monaco,Courier New,monospace;line-height:1.5;border:1px solid rgba(34,197,94,0.2);margin:8px 16px 16px;">[ BETOR AI ]\nPilih provider > Rekam > Analisa</div><div id="ai-history-panel" style="display:none;background:rgba(0,0,0,0.3);padding:10px;border-radius:8px;margin:0 16px 16px;max-height:120px;overflow-y:auto;"></div></div></div>';
 
-Object.assign(widget.style,{position:"fixed",bottom:"20px",left:"20px",zIndex:"2147483647"});
+Object.assign(widget.style,{position:"fixed",bottom:"20px",right:"20px",zIndex:"2147483647"});
 
 function enforceHUD(){
-    if(document.body && !document.getElementById("ai-command-widget")){
+    if(document.body && !document.getElementById("betor-widget")){
         document.body.appendChild(widget);
         if(typeof chrome !== "undefined" && chrome.storage){
             chrome.storage.local.get(["groqApiKey"], function(res){
@@ -28,15 +28,15 @@ function enforceHUD(){
 }
 setInterval(enforceHUD, 1000);
 
-function setLoading(isLoading){
+function setLoading(loading){
     var screen = document.getElementById("ai-result-screen");
     var btns = ["ai-btn-analyze","ai-btn-record","ai-btn-export","ai-btn-save","ai-btn-history","ai-btn-clear","ai-btn-test"];
-    isProcessing = isLoading;
+    isProcessing = loading;
     btns.forEach(function(id){
         var btn = document.getElementById(id);
-        if(btn) btn.disabled = isLoading;
+        if(btn) btn.disabled = loading;
     });
-    if(screen) screen.style.color = isLoading ? "#fbbf24" : "#34d399";
+    if(screen) screen.style.color = loading ? "#fbbf24" : "#22c55e";
 }
 
 function updateHudUI(msg, append){
@@ -44,7 +44,7 @@ function updateHudUI(msg, append){
     if(screen && msg){
         if(append){
             var t = new Date().toLocaleTimeString();
-            screen.innerText = "[" + t + "] " + msg + "\n\n" + screen.innerText.substring(0, 1500);
+            screen.innerText = "[" + t + "] " + msg + "\n\n" + screen.innerText.substring(0, 1200);
         }else{
             screen.innerText = msg;
         }
@@ -88,33 +88,32 @@ async function getLiveH2H(){
             var idx = text.indexOf(patterns[i]);
             if(idx !== -1){
                 var raw = text.substring(idx, idx + 2000);
-                return "DATA:" + raw.replace(/\n+/g, "|").replace(/\s+/g, " ").substring(0, 1800);
+                return "H2H:" + raw.replace(/\n+/g, "|").replace(/\s+/g, " ").substring(0, 1800);
             }
         }
-        return "INFO:H2H tdk ada";
+        return "H2H: tdk ada";
     }catch(e){
-        return "INFO:Error-" + e.message;
+        return "H2H: Error-" + e.message;
     }
 }
 
 function getPrompt(){
-    return "HITUNG SENDIRI!\n1. Prob=(1/Odds)x100%\n2. Risk:>50%=RENDAH,30-50%=SEDANG,<30%=TINGGI\n3.Kelly:prob x odds>1=VALUE,<1=SKIP\n\nFORMAT:\nRECOMMENDED:[HOME/DRAW/AWAY]@odds-prob%-alasan\nOU:[OVER/UNDER]@odds-prob%-alasan\nBTTS:[YES/NO]@odds-prob%-alasan\nRISK:[RENDAH/SEDANG/TINGGI]\nKELLY:[2%|3%|4%|5%|SKIP]";
+    return "ANALISA:\n1.Prob=(1/Odds)x100%\n2.Risk:>50%=RENDAH,30-50%=SEDANG,<30%=TINGGI\n3.Kelly:prob x odds>1=VALUE\n\nREKOMENDASI:\n1x2: [HOME/DRAW/AWAY]@odds\nOU: [OVER/UNDER]@odds\nBTTS: YES/NO@odds\nRisk: RENDAH/SEDANG/TINGGI\nKelly: 2-5% atau SKIP";
 }
 
 document.addEventListener("click", async function(e){
     if(e.target && e.target.id === "api-provider"){
         var provider = e.target.value;
         var endpoint = document.getElementById("api-endpoint");
-        if(provider === "ollama") endpoint.style.display = "block";
-        else endpoint.style.display = "none";
+        endpoint.style.display = provider === "ollama" ? "block" : "none";
         return;
     }
-    if(e.target && e.target.closest("#ai-btn-toggle")){
-        var body = document.getElementById("ai-widget-body");
-        var icon = document.getElementById("ai-toggle-icon");
+    if(e.target && e.target.closest("#betor-header")){
+        var body = document.getElementById("betor-body");
+        var icon = document.getElementById("betor-toggle");
         isMinimized = !isMinimized;
         body.style.display = isMinimized ? "none" : "block";
-        icon.innerText = isMinimized ? "[+]" : "[-]";
+        icon.innerText = isMinimized ? ">" : "▼";
         return;
     }
     if(e.target && e.target.id === "ai-btn-record"){
@@ -124,8 +123,8 @@ document.addEventListener("click", async function(e){
             updateHudUI("Recording...", false);
             var d = scrapeStakeData();
             scrapedMemory.push(d);
-            updateHudUI("OK:" + d.split("\n").length + " market", true);
-        }catch(err){ updateHudUI("ERR:" + err.message, true); }
+            updateHudUI("OK: " + d.split("\n").length + " market", true);
+        }catch(err){ updateHudUI("ERR: " + err.message, true); }
         finally{ setLoading(false); }
         return;
     }
@@ -137,11 +136,11 @@ document.addEventListener("click", async function(e){
     if(e.target && e.target.id === "ai-btn-save"){
         var screen = document.getElementById("ai-result-screen");
         var txt = screen ? screen.innerText : "";
-        if(txt.length < 50){ updateHudUI("WARN:No data", true); return; }
+        if(txt.length < 30){ updateHudUI("No data", true); return; }
         savedAnalysis.push({id: Date.now(), waktu: new Date().toLocaleString(), hasil: txt});
         if(chrome && chrome.storage){
             chrome.storage.local.set({groqSavedAnalysis: savedAnalysis}, function(){
-                updateHudUI("Saved(" + savedAnalysis.length + ")", true);
+                updateHudUI("Saved (" + savedAnalysis.length + ")", true);
             });
         }
         return;
@@ -152,9 +151,9 @@ document.addEventListener("click", async function(e){
         if(show && chrome && chrome.storage){
             chrome.storage.local.get(["groqSavedAnalysis"], function(res){
                 savedAnalysis = res.groqSavedAnalysis || [];
-                var html = savedAnalysis.length === 0 ? "<div>Empty</div>" : "";
+                var html = savedAnalysis.length === 0 ? "<div style='color:#888;'>No history</div>" : "";
                 savedAnalysis.slice().reverse().forEach(function(it){
-                    html += "<div onclick='loadH(" + it.id + ")' style='cursor:pointer;padding:5px;margin:3px;background:#374151;'>" + it.waktu + "</div>";
+                    html += "<div onclick='loadH(" + it.id + ")' style='padding:8px;margin:4px 0;background:rgba(255,255,255,0.1);border-radius:6px;cursor:pointer;font-size:11px;color:#aaa;'>" + it.waktu + "</div>";
                 });
                 panel.innerHTML = html;
                 panel.style.display = "block";
@@ -187,16 +186,14 @@ document.addEventListener("click", async function(e){
         return;
     }
     if(e.target && e.target.id === "ai-btn-test"){
-        if(scrapedMemory.length === 0) throw new Error("Rekam dulu");
+        if(scrapedMemory.length === 0) throw new Error("Rekam dulu!");
         try{
-            var input = document.getElementById("hud-api-key");
-            activeApiKey = input ? input.value.trim() : "";
             var h2h = await getLiveH2H();
-            var data = scrapedMemory.join("\n\n") + "\n\nH2H:" + h2h;
+            var data = scrapedMemory.join("\n\n") + "\n\n" + h2h;
             var provider = document.getElementById("api-provider").value;
             var prompt = getPrompt();
-            document.getElementById("ai-result-screen").innerText = "[TEST]\nProvider:" + provider + "\n\nPROMPT:\n" + prompt + "\n\nDATA:\n" + data.substring(0, 500) + "...\n\n[Tidak bakar API]";
-        }catch(err){ updateHudUI("ERR:" + err.message, true); }
+            document.getElementById("ai-result-screen").innerText = "[ TEST MODE ]\nProvider: " + provider + "\n\nPROMPT:\n" + prompt + "\n\nDATA:\n" + data.substring(0, 400) + "...\n\n[ TIDAK BAKAR API ]";
+        }catch(err){ updateHudUI("ERR: " + err.message, true); }
         return;
     }
     if(e.target && e.target.id === "ai-btn-analyze"){
@@ -204,16 +201,16 @@ document.addEventListener("click", async function(e){
         try{
             var input = document.getElementById("hud-api-key");
             activeApiKey = input ? input.value.trim() : "";
-            if(!activeApiKey) throw new Error("API Key kosong");
-            if(scrapedMemory.length === 0) throw new Error("Rekam dulu");
+            if(!activeApiKey) throw new Error("Isi API Key!");
+            if(scrapedMemory.length === 0) throw new Error("Rekam dulu!");
             setLoading(true);
             updateHudUI("Analysing...", false);
             var h2h = await getLiveH2H();
-            var data = scrapedMemory.join("\n\n") + "\n\nH2H:" + h2h;
+            var data = scrapedMemory.join("\n\n") + "\n\n" + h2h;
             var provider = document.getElementById("api-provider").value;
             var endpoint = document.getElementById("api-endpoint").value;
             await analyzeWithAPI(activeApiKey, data, provider, endpoint);
-        }catch(err){ updateHudUI("ERR:" + err.message, true); }
+        }catch(err){ updateHudUI("ERR: " + err.message, true); }
         finally{ setLoading(false); }
         return;
     }
@@ -233,13 +230,11 @@ async function analyzeWithAPI(key, data, provider, endpoint){
         modelName = "Llama-3.1-70B";
         headers["Authorization"] = "Bearer " + key;
     }else if(provider === "cohere"){
-        // Cohere - FREE 1000 calls/month!
         url = "https://api.cohere.ai/v1/chat";
         body = {model: "command-r-plus", message: "PROMPT:\n" + prompt + "\n\nDATA:\n" + data, max_tokens: 1500};
         modelName = "Command R+";
         headers["Authorization"] = "Bearer " + key;
     }else{
-        // Groq default
         url = "https://api.groq.com/openai/v1/chat/completions";
         body = {model: "llama-3.3-70b-versatile", messages: [{role: "system", content: prompt}, {role: "user", content: "DATA:\n" + data}], temperature: 0, max_tokens: 1500};
         modelName = "llama-3.3-70b";
@@ -254,12 +249,12 @@ async function analyzeWithAPI(key, data, provider, endpoint){
         if(provider === "ollama"){
             content = d.message ? d.message.content : "";
         }else if(provider === "cohere"){
-            content = d.text || (d.message ? d.message.content : "") || (d.generations && d.generations[0] ? d.generations[0].text : "") || "Error: " + JSON.stringify(d).substring(0, 200);
+            content = d.text || (d.message ? d.message.content : "") || (d.generations && d.generations[0] ? d.generations[0].text : "") || "Error: " + JSON.stringify(d).substring(0, 150);
         }else{
-            content = d.choices && d.choices[0] ? d.choices[0].message.content : (d.error ? d.error.message : "Error: " + JSON.stringify(d).substring(0, 200));
+            content = d.choices && d.choices[0] ? d.choices[0].message.content : (d.error ? d.error.message : "Error: " + JSON.stringify(d)).substring(0, 300);
         }
         
-        document.getElementById("ai-result-screen").innerText = "[Provider:" + provider + "]\nModel:" + modelName + "\n\n" + content;
+        document.getElementById("ai-result-screen").innerText = "[ " + provider.toUpperCase() + " ]\n" + modelName + "\n------------\n" + content;
     }catch(e){
         document.getElementById("ai-result-screen").innerText = "ERROR: " + e.message;
     }
