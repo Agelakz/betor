@@ -201,6 +201,8 @@ document.addEventListener("click", async function(e){
             var input = document.getElementById("hud-api-key");
             activeApiKey = input ? input.value.trim() : "";
             if(!activeApiKey) throw new Error("API Key kosong");
+            // Check if using Together key (different from Groq)
+            if(key.length > 50 && !key.startsWith("gsk_")){
             if(scrapedMemory.length === 0) throw new Error("Rekam dulu");
             setLoading(true);
             updateHudUI("Analysing...", false);
@@ -217,8 +219,9 @@ document.addEventListener("click", async function(e){
 });
 
 async function analyzeWithGroq(key, data){
-    var prompt = "HITUNG SENDIRI! Jangan asal ambil dari data.\n\nLANGKAH:\n1. HITUNG PROBABILITAS: Prob = (1/Odds) x 100%\n2. TENTUKAN RISK: Prob>50%=RENDAH, 30-50%=SEDANG, <30%=TINGGI\n3. HITUNG KELLY: Kalau prob x odds > 1, ADA VALUE. Kalau prob x odds < 1, SKIP.\n\nFORMAT WAJIB (TULIS INI SAJA):\nRECOMMENDED: [HOME/DRAW/AWAY/TIDAK]@odds - prob[%] - alasan\nOU: [OVER/UNDER] line@odds - prob[%] - alasan\nBTTS: [YES/NO]@odds - prob[%] - alasan\nRISK: [RENDAH/SEDANG/TINGGI]\nKELLY: [2%|3%|4%|5%|SKIP]";;
-    var models = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"];
+    // Use bigger model for better output\nvar prompt = "HITUNG SENDIRI! Jangan asal ambil dari data.\n\nLANGKAH:\n1. HITUNG PROBABILITAS: Prob = (1/Odds) x 100%\n2. TENTUKAN RISK: Prob>50%=RENDAH, 30-50%=SEDANG, <30%=TINGGI\n3. HITUNG KELLY: Kalau prob x odds > 1, ADA VALUE. Kalau prob x odds < 1, SKIP.\n\nFORMAT WAJIB (TULIS INI SAJA):\nRECOMMENDED: [HOME/DRAW/AWAY/TIDAK]@odds - prob[%] - alasan\nOU: [OVER/UNDER] line@odds - prob[%] - alasan\nBTTS: [YES/NO]@odds - prob[%] - alasan\nRISK: [RENDAH/SEDANG/TINGGI]\nKELLY: [2%|3%|4%|5%|SKIP]";;
+    var models = ["llama-3.3-70b-versatile"]; // Best model
+var togetherModels = ["Meta-Llama-3.1-70B-Instruct", "Mistral-7B-Instruct-v0.1"];
     var ok = false;
     data = data.replace(/\s+/g, " ").trim();
     for(var i = 0; i < models.length; i++){
@@ -260,5 +263,25 @@ async function analyzeWithGroq(key, data){
             updateHudUI("ERR:" + e.message, true);
         }
     }
-    if(!ok) updateHudUI("FAILED", true);
+    if(!ok){
+    // Try Together AI as backup
+    updateHudUI("Trying Together AI...", true);
+    for(var j=0; j<togetherModels.length; j++){
+        var tm = togetherModels[j];
+        try{
+            var res = await fetch("https://api.together.ai/v1/chat/completions", {
+                method: "POST",
+                headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},
+                body:JSON.stringify({model:tm,messages:[{role:"system",content:prompt},{role:"user",content:"DATA:\n"+data}],max_tokens:1500})
+            });
+            var td = await res.json();
+            if(res.ok){
+                var c = td.choices[0]?td.choices[0].message.content:"";
+                document.getElementById("ai-result-screen").innerText = "[MODEL:"+tm+"]\n\n"+c;
+                ok = true; break;
+            }
+        }catch(e){ updateHudUI("ERR"+tm+":"+e.message, true); }
+    }
+}
+if(!ok) updateHudUI("FAILED", true);
 }
