@@ -45,9 +45,9 @@ async function analyzeWithAPI(key, data, provider) {
     var url, body, modelName, headers = {"Content-Type": "application/json"};
     
     if (provider === "cohere") {
-        url = "https://api.cohere.ai/v1/chat";
-        body = {model: "command-r-plus", message: "PROMPT:\n" + prompt + "\n\nDATA:\n" + data, max_tokens: 1500};
-        modelName = "Command R+";
+        url = "https://api.cohere.com/v2/chat";
+        body = {model: "c4ai-aya-expanse-32b", messages: [{role: "user", content: "PROMPT:\n" + prompt + "\n\nDATA:\n" + data}], temperature: 0.3};
+        modelName = "aya-expanse-32b";
         headers["Authorization"] = "Bearer " + key;
     } else if (provider === "together") {
         url = "https://api.together.ai/v1/chat/completions";
@@ -70,7 +70,7 @@ async function analyzeWithAPI(key, data, provider) {
         var content = "";
         
         if (provider === "cohere") {
-            content = d.text || (d.message ? d.message.content : "") || "Error: " + JSON.stringify(d).substring(0, 100);
+            content = d.message && d.message.content ? d.message.content : (d.text || "") || "Error: " + JSON.stringify(d).substring(0, 100);
         } else {
             content = d.choices && d.choices[0] ? d.choices[0].message.content : (d.error ? d.error.message : "Error: " + JSON.stringify(d)).substring(0, 100);
         }
