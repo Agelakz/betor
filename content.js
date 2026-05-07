@@ -70,7 +70,7 @@ async function analyzeWithAPI(key, data, provider) {
         headers["Authorization"] = "Bearer " + key;
     } else {
         url = "https://api.groq.com/openai/v1/chat/completions";
-        body = {model: "llama-3.3-70b-versatile", messages: [{role: "user", content: getPrompt() + "\n\n" + data}]};
+        body = {model: "llama-3.3-70b-versatile", temperature: 0.1, messages: [{role: "user", content: getPrompt() + "\n\n" + data}]};
         modelName = "llama-3.3-70b";
         headers["Authorization"] = "Bearer " + key;
     }
@@ -82,7 +82,7 @@ async function analyzeWithAPI(key, data, provider) {
         var res = await fetch(url, {method: "POST", headers: headers, body: JSON.stringify(body)});
         var d = await res.json();
         var content = d.choices ? d.choices[0].message.content : d.message ? d.message.content : "Error: " + d.error;
-        screen.innerText = "[ " + provider.toUpperCase() + " ]\n" + modelName + "\n\n" + (content || "").substring(0, 500);
+        screen.innerText = "[ " + provider.toUpperCase() + " ]\n" + modelName + "\n\n" + (content || "").substring(0, 1000);
     } catch(e) {
         screen.innerText = "ERROR: " + e.message;
     }
