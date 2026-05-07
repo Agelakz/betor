@@ -89,7 +89,13 @@ async function analyzeWithAPI(key, data, provider) {
         headers["Authorization"] = "Bearer " + key;
     } else if (provider === "together") {
     } else if (provider === "github") {
-        url = "https://models.github.ai/v1/chat/completions";
+        url = "https://models.github.ai/inference/chat/completions";
+        headers["Accept"] = "application/vnd.github+json";
+        headers["X-GitHub-Api-Version"] = "2022-11-28";
+        body = {model: "openai/gpt-4o", messages: [{role: "user", content: "PROMPT: " + prompt + "\n\nDATA: " + data}], temperature: 0.1, max_tokens: 1500};
+        modelName = "GPT-4o";
+        headers["Authorization"] = "Bearer " + key;
+        url = "https://models.github.ai/inference/chat/completions";
         body = {model: "Llama-3.1-70B-Instruct", messages: [{role: "system", content: prompt}, {role: "user", content: "DATA:
 " + data}], temperature: 0.1, max_tokens: 1500};
         modelName = "Llama-3.1-70B";
