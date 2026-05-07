@@ -1,4 +1,4 @@
-// Groq Stake Extension - Clean Version
+// Groq Stake Extension - Multi-API Support
 var scrapedMemory = [];
 var activeApiKey = "";
 var isMinimized = false;
@@ -8,7 +8,7 @@ var savedAnalysis = [];
 // Widget
 var widget = document.createElement("div");
 widget.id = "ai-command-widget";
-widget.innerHTML = '<div id="ai-widget-container" style="background:#111827;color:#fff;border:1px solid #374151;border-radius:8px;width:320px;"><div id="ai-btn-toggle" style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #374151;cursor:pointer;background:#1f2937;"><strong style="color:#f59e0b;">GROQ VIP</strong><span id="ai-toggle-icon">[-]</span></div><div id="ai-widget-body" style="padding:12px;"><select id="api-provider" style="width:93%;padding:5px;margin-bottom:5px;background:#374151;color:#fff;border:1px solid #4b5563;"><option value="groq">Groq (Default)</option><option value="ollama">Ollama (Lokal/Gratis)</option><option value="openai">OpenAI Compatible</option></select><input type="password" id="hud-api-key" placeholder="API Key" style="width:93%;padding:8px;margin-bottom:8px;background:#374151;color:#fff;"><input type="text" id="api-endpoint" placeholder="Endpoint URL" style="width:93%;padding:8px;margin-bottom:8px;background:#374151;color:#fff;display:none;"><button id="ai-btn-record" style="width:100%;margin-bottom:8px;background:#3b82f6;color:#fff;border:none;padding:10px;cursor:pointer;">[RECORD]</button><div style="display:flex;gap:5px;margin-bottom:8px;"><button id="ai-btn-analyze" style="flex:2;background:#10b981;color:#fff;border:none;padding:8px;cursor:pointer;">[ANALYZE]</button><button id="ai-btn-clear" style="flex:1;background:#ef4444;color:#fff;border:none;padding:8px;cursor:pointer;">[DEL]</button></div><div style="display:flex;gap:5px;margin-bottom:8px;"><button id="ai-btn-save" style="flex:1;background:#f59e0b;color:#fff;border:none;padding:8px;cursor:pointer;">[SAVE]</button><button id="ai-btn-history" style="flex:1;background:#6366f1;color:#fff;border:none;padding:8px;cursor:pointer;">[HIST]</button><button id="ai-btn-export" style="flex:1;background:#8b5cf6;color:#fff;border:none;padding:8px;cursor:pointer;">[COPY]</button></div><div id="ai-result-screen" style="background:#000;padding:8px;border-radius:4px;height:200px;overflow-y:auto;white-space:pre-wrap;color:#34d399;font-family:monospace;">[READY]</div><div id="ai-history-panel" style="display:none;background:#1f2937;padding:8px;margin-top:8px;max-height:150px;overflow-y:auto;"></div></div></div>';
+widget.innerHTML = '<div id="ai-widget-container" style="background:#111827;color:#fff;border:1px solid #374151;border-radius:8px;width:320px;"><div id="ai-btn-toggle" style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #374151;cursor:pointer;background:#1f2937;"><strong style="color:#f59e0b;">GROQ VIP</strong><span id="ai-toggle-icon">[-]</span></div><div id="ai-widget-body" style="padding:12px;"><select id="api-provider" style="width:93%;padding:5px;margin-bottom:5px;background:#374151;color:#fff;border:1px solid #4b5563;"><option value="groq">Groq (Default)</option><option value="ollama">Ollama (Lokal/Gratis)</option><option value="openai">OpenAI</option></select><input type="password" id="hud-api-key" placeholder="API Key" style="width:93%;padding:8px;margin-bottom:8px;background:#374151;color:#fff;"><input type="text" id="api-endpoint" placeholder="Endpoint URL" style="width:93%;padding:8px;margin-bottom:8px;background:#374151;color:#fff;display:none;"><button id="ai-btn-record" style="width:100%;margin-bottom:8px;background:#3b82f6;color:#fff;border:none;padding:10px;cursor:pointer;">[RECORD]</button><div style="display:flex;gap:5px;margin-bottom:8px;"><button id="ai-btn-analyze" style="flex:2;background:#10b981;color:#fff;border:none;padding:8px;cursor:pointer;">[ANALYZE]</button><button id="ai-btn-clear" style="flex:1;background:#ef4444;color:#fff;border:none;padding:8px;cursor:pointer;">[DEL]</button></div><div style="display:flex;gap:5px;margin-bottom:8px;"><button id="ai-btn-save" style="flex:1;background:#f59e0b;color:#fff;border:none;padding:8px;cursor:pointer;">[SAVE]</button><button id="ai-btn-history" style="flex:1;background:#6366f1;color:#fff;border:none;padding:8px;cursor:pointer;">[HIST]</button><button id="ai-btn-export" style="flex:1;background:#8b5cf6;color:#fff;border:none;padding:8px;cursor:pointer;">[COPY]</button></div><div id="ai-result-screen" style="background:#000;padding:8px;border-radius:4px;height:200px;overflow-y:auto;white-space:pre-wrap;color:#34d399;font-family:monospace;">[READY]</div><div id="ai-history-panel" style="display:none;background:#1f2937;padding:8px;margin-top:8px;max-height:150px;overflow-y:auto;"></div></div></div>';
 
 Object.assign(widget.style,{position:"fixed",bottom:"20px",left:"20px",zIndex:"2147483647"});
 
@@ -100,6 +100,20 @@ async function getLiveH2H(){
 }
 
 document.addEventListener("click", async function(e){
+    if(e.target && e.target.id === "api-provider"){
+        var provider = e.target.value;
+        var endpoint = document.getElementById("api-endpoint");
+        if(provider === "ollama"){
+            endpoint.style.display = "block";
+            endpoint.placeholder = "http://localhost:11434";
+        }else if(provider === "openai"){
+            endpoint.style.display = "block";
+            endpoint.placeholder = "https://api.openai.com/v1";
+        }else{
+            endpoint.style.display = "none";
+        }
+        return;
+    }
     if(e.target && e.target.closest("#ai-btn-toggle")){
         var body = document.getElementById("ai-widget-body");
         var icon = document.getElementById("ai-toggle-icon");
@@ -111,20 +125,6 @@ document.addEventListener("click", async function(e){
             body.style.display = "block";
             icon.innerText = "[-]";
             isMinimized = false;
-        }
-        return;
-    }
-    if(e.target && e.target.id === "api-provider"){
-        var provider = e.target.value;
-        var endpoint = document.getElementById("api-endpoint");
-        if(provider === "ollama"){
-            endpoint.style.display = "block";
-            endpoint.placeholder = "http://localhost:11434";
-        }else if(provider === "openai"){
-            endpoint.style.display = "block";
-            endpoint.placeholder = "https://your-api.com/v1";
-        }else{
-            endpoint.style.display = "none";
         }
         return;
     }
@@ -234,19 +234,20 @@ document.addEventListener("click", async function(e){
 
 async function analyzeWithAPI(key, data, provider, endpoint){
     var prompt = "HITUNG SENDIRI! Jangan asal ambil.\n\nLANGKAH:\n1. Prob = (1/Odds)x100%\n2. Risk: >50%=RENDAH, 30-50%=SEDANG, <30%=TINGGI\n3. Kelly: prob x odds >1 = VALUE, <1 = SKIP.\n\nFORMAT WAJIB:\nRECOMMENDED: [HOME/DRAW/AWAY]@odds - prob% - alasan\nOU: [OVER/UNDER]@odds - prob% - alasan\nBTTS: [YES/NO]@odds - prob% - alasan\nRISK: [RENDAH/SEDANG/TINGGI]\nKELLY: [2%|3%|4%|5%|SKIP]";
-    var url, body;
+    var url, body, modelName;
     
-    // Determine endpoint based on provider
     if(provider === "ollama"){
         url = (endpoint || "http://localhost:11434") + "/api/chat";
         body = {model: "llama3.1", messages: [{role: "system", content: prompt}, {role: "user", content: "DATA:\n" + data}], stream: false};
+        modelName = "llama3.1";
     }else if(provider === "openai"){
-        url = (endpoint || "https://api.openai.com/v1/chat/completions") + "/chat/completions";
+        url = (endpoint || "https://api.openai.com/v1") + "/chat/completions";
         body = {model: "gpt-4o", messages: [{role: "system", content: prompt}, {role: "user", content: "DATA:\n" + data}], max_tokens: 1500};
+        modelName = "gpt-4o";
     }else{
-        // Groq default
         url = "https://api.groq.com/openai/v1/chat/completions";
         body = {model: "llama-3.3-70b-versatile", messages: [{role: "system", content: prompt}, {role: "user", content: "DATA:\n" + data}], temperature: 0, max_tokens: 1500};
+        modelName = "llama-3.3-70b";
     }
     
     try{
@@ -260,79 +261,11 @@ async function analyzeWithAPI(key, data, provider, endpoint){
         if(provider === "ollama"){
             content = d.message ? d.message.content : "";
         }else{
-            content = d.choices[0] ? d.choices[0].message.content : "";
+            content = d.choices && d.choices[0] ? d.choices[0].message.content : (d.error ? d.error.message : "Error");
         }
         
-        document.getElementById("ai-result-screen").innerText = "[PROVIDER:" + provider + " MODEL:" + (provider==="ollama"?"llama3.1":(provider==="openai"?"gpt-4o":"llama-3.3-70b")) + "]\n\n" + content;
+        document.getElementById("ai-result-screen").innerText = "[PROVIDER:" + provider + " MODEL:" + modelName + "]\n\n" + content;
     }catch(e){
         document.getElementById("ai-result-screen").innerText = "ERROR: " + e.message;
     }
-}
-
-async function analyzeWithGroq(key, data){
-    // Use bigger model for better output\nvar prompt = "HITUNG SENDIRI! Jangan asal ambil dari data.\n\nLANGKAH:\n1. HITUNG PROBABILITAS: Prob = (1/Odds) x 100%\n2. TENTUKAN RISK: Prob>50%=RENDAH, 30-50%=SEDANG, <30%=TINGGI\n3. HITUNG KELLY: Kalau prob x odds > 1, ADA VALUE. Kalau prob x odds < 1, SKIP.\n\nFORMAT WAJIB (TULIS INI SAJA):\nRECOMMENDED: [HOME/DRAW/AWAY/TIDAK]@odds - prob[%] - alasan\nOU: [OVER/UNDER] line@odds - prob[%] - alasan\nBTTS: [YES/NO]@odds - prob[%] - alasan\nRISK: [RENDAH/SEDANG/TINGGI]\nKELLY: [2%|3%|4%|5%|SKIP]";;
-    var models = ["llama-3.3-70b-versatile"]; // Best model
-var togetherModels = ["Meta-Llama-3.1-70B-Instruct", "Mistral-7B-Instruct-v0.1"];
-    var ok = false;
-    data = data.replace(/\s+/g, " ").trim();
-    for(var i = 0; i < models.length; i++){
-        var m = models[i];
-        updateHudUI("Calling " + m + "...", true);
-        try{
-            var c = new AbortController();
-            var to = setTimeout(function(){ c.abort(); }, 30000);
-            var res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                method: "POST",
-                headers: {"Content-Type": "application/json", "Authorization": "Bearer " + key},
-                body: JSON.stringify({
-                    model: m,
-                    messages: [
-                        {role: "system", content: prompt},
-                        {role: "user", content: "DATA:\n" + data}
-                    ],
-                    temperature: 0,
-                    max_tokens: 1500
-                }),
-                signal: c.signal
-            });
-            clearTimeout(to);
-            var d = await res.json();
-            if(res.ok){
-                var content = d.choices[0] ? d.choices[0].message.content : "";
-                document.getElementById("ai-result-screen").innerText = "[MODEL:" + m + "]\n\n" + content;
-                ok = true;
-                break;
-            }else{
-                if(res.status === 429){
-                    updateHudUI("Limit " + m, true);
-                    await new Promise(function(r){ setTimeout(r, 1500); });
-                    continue;
-                }
-                throw new Error(d.error ? d.error.message : "Error");
-            }
-        }catch(e){
-            updateHudUI("ERR:" + e.message, true);
-        }
-    }
-    if(!ok){
-    // Try Together AI as backup
-    updateHudUI("Trying Together AI...", true);
-    for(var j=0; j<togetherModels.length; j++){
-        var tm = togetherModels[j];
-        try{
-            var res = await fetch("https://api.together.ai/v1/chat/completions", {
-                method: "POST",
-                headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},
-                body:JSON.stringify({model:tm,messages:[{role:"system",content:prompt},{role:"user",content:"DATA:\n"+data}],max_tokens:1500})
-            });
-            var td = await res.json();
-            if(res.ok){
-                var c = td.choices[0]?td.choices[0].message.content:"";
-                document.getElementById("ai-result-screen").innerText = "[MODEL:"+tm+"]\n\n"+c;
-                ok = true; break;
-            }
-        }catch(e){ updateHudUI("ERR"+tm+":"+e.message, true); }
-    }
-}
-if(!ok) updateHudUI("FAILED", true);
 }
