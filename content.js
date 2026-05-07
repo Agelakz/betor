@@ -1,4 +1,39 @@
 // Menggunakan 'var' agar tidak error saat ekstensi di-reload (Anti-Crash)
+// Debug - comment ini kalo sudah works
+console.log("GROQ Extension loaded!");
+
+// Tambahin error handler untuk chrome.storage
+function safeGetStorage(key, callback) {
+    try {
+        chrome.storage.local.get([key], (res) => {
+            if (chrome.runtime.lastError) {
+                console.error("Storage error:", chrome.runtime.lastError);
+                callback({});
+            } else {
+                callback(res);
+            }
+        });
+    } catch(e) {
+        console.error("Storage exception:", e);
+        callback({});
+    }
+}
+
+function safeSetStorage(key, value, callback) {
+    try {
+        chrome.storage.local.set({[key]: value}, () => {
+            if (chrome.runtime.lastError) {
+                console.error("Storage error:", chrome.runtime.lastError);
+            } else if (callback) {
+                callback();
+            }
+        });
+    } catch(e) {
+        console.error("Storage exception:", e);
+    }
+}
+
+
 var scrapedMemory = [];
 var activeApiKey = ""; 
 var isMinimized = false;
@@ -42,7 +77,7 @@ Object.assign(widget.style, { position: 'fixed', bottom: '20px', left: '20px', z
 function enforceHUD() {
     if (document.body && !document.getElementById('ai-command-widget')) {
         document.body.appendChild(widget);
-        chrome.storage.local.get(['groqApiKey'], (res) => {
+        if (typeof chrome !== "undefined" && chrome.storage) { chrome.storage.local.get(['groqApiKey'], (res) => {
             if (res.groqApiKey) {
                 activeApiKey = res.groqApiKey;
                 document.getElementById('hud-api-key').value = activeApiKey;
@@ -59,7 +94,7 @@ function setLoading(isLoading) {
   const btnExport = document.getElementById('ai-btn-export');
   const btnSave = document.getElementById('ai-btn-save');
   const btnHistory = document.getElementById('ai-btn-history');
-  const btnClear = document.getElementById('ai-btn-clear');
+  var btnClear = document.getElementById('ai-btn-clear');
   
   isProcessing = isLoading;
   btnAnalyze.disabled = isLoading;
