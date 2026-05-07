@@ -217,7 +217,7 @@ document.addEventListener("click", async function(e){
 });
 
 async function analyzeWithGroq(key, data){
-    var prompt = "ATURAN:\n1.BAHASA INDONESIA\n2.GAK HALUSINASI\n\nFORMAT:\nMATCH:[Home]vs[Away]\nDATA:[yg ada]\nPREDIKSI:[1x2,OU,BTTS,Risk,Kelly]";
+    var prompt = "Kamu adalah TIPSTERS CERDAS.analisis dan BERIKAN REKOMENDASI yang jelas.\n\nFORMAT WAJIB (PAKE INI SAJA):\n1. RECOMMENDED: [HOME/DRAW/AWAY/TIDAK BET]@[ODDS] [alasannya]\n2. OU: [OVER/UNDER]@[ODDS] [alasannya]\n3. BTTS: [YES/NO]@[ODDS] [alasannya]\n4. RISK: [RENDAH/SEDANG/TINGGI]\n5. KELLY: [2%|3%|4%|5%|SKIP]\n\nJANGAN BUAT YANG LAIN. WAJIB PAKAI FORMAT DIATAS.";
     var models = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"];
     var ok = false;
     data = data.replace(/\s+/g, " ").trim();
