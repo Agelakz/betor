@@ -88,6 +88,12 @@ async function analyzeWithAPI(key, data, provider) {
         modelName = "aya-expanse-32b";
         headers["Authorization"] = "Bearer " + key;
     } else if (provider === "together") {
+    } else if (provider === "github") {
+        url = "https://models.github.ai/v1/chat/completions";
+        body = {model: "Llama-3.1-70B-Instruct", messages: [{role: "system", content: prompt}, {role: "user", content: "DATA:
+" + data}], temperature: 0.1, max_tokens: 1500};
+        modelName = "Llama-3.1-70B";
+        headers["Authorization"] = "Bearer " + key;
         url = "https://api.together.ai/v1/chat/completions";
         body = {model: "Meta-Llama-3.1-70B-Instruct", messages: [{role: "system", content: prompt}, {role: "user", content: "DATA:\n" + data}], max_tokens: 1500};
         modelName = "Llama-3.1-70B";
