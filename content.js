@@ -3,6 +3,7 @@ var scrapedMemory = [];
 var activeApiKey = ""; 
 var isMinimized = false;
 var isProcessing = false;
+var savedAnalysis = [];
 
 // =========================================================================
 // 1. PEMBUATAN WIDGET HUD
@@ -25,8 +26,13 @@ widget.innerHTML = `
           <button id="ai-btn-analyze" style="flex: 2; background: #10b981; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; font-weight: bold;">⚙️ ANALISIS PARLAY</button>
           <button id="ai-btn-clear" style="flex: 1; background: #ef4444; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; font-weight: bold;">🗑️ HAPUS</button>
         </div>
-        <button id="ai-btn-export" style="width: 100%; margin-bottom: 8px; background: #8b5cf6; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; font-weight: bold;">📋 EXPORT HASIL</button>
-        <div id="ai-result-screen" style="background: #000000; padding: 8px; border-radius: 4px; height: 250px; overflow-y: auto; white-space: pre-wrap; color: #34d399; font-family: monospace; border: 1px solid #065f46;">[GROQ READY] - Masukkan Key lalu Rekam.</div>
+        <div style="display: flex; gap: 5px; margin-bottom: 8px;">
+          <button id="ai-btn-save" style="flex: 1; background: #f59e0b; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; font-weight: bold;">💾 SIMPAN</button>
+          <button id="ai-btn-history" style="flex: 1; background: #6366f1; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; font-weight: bold;">📁 HISTORY</button>
+          <button id="ai-btn-export" style="flex: 1; background: #8b5cf6; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; font-weight: bold;">📋 EXPORT</button>
+        </div>
+        <div id="ai-result-screen" style="background: #000000; padding: 8px; border-radius: 4px; height: 220px; overflow-y: auto; white-space: pre-wrap; color: #34d399; font-family: monospace; border: 1px solid #065f46;">[GROQ READY] - Masukkan Key lalu Rekam.</div>
+        <div id="ai-history-panel" style="display: none; background: #1f2937; padding: 8px; border-radius: 4px; margin-top: 8px; max-height: 150px; overflow-y: auto;"></div>
     </div>
   </div>
 `;
@@ -51,11 +57,17 @@ function setLoading(isLoading) {
   const btnAnalyze = document.getElementById('ai-btn-analyze');
   const btnRecord = document.getElementById('ai-btn-record');
   const btnExport = document.getElementById('ai-btn-export');
+  const btnSave = document.getElementById('ai-btn-save');
+  const btnHistory = document.getElementById('ai-btn-history');
+  const btnClear = document.getElementById('ai-btn-clear');
   
   isProcessing = isLoading;
   btnAnalyze.disabled = isLoading;
   btnRecord.disabled = isLoading;
   btnExport.disabled = isLoading;
+  btnSave.disabled = isLoading;
+  btnHistory.disabled = isLoading;
+  btnClear.disabled = isLoading;
   
   if (isLoading) {
     screen.style.color = '#fbbf24';
@@ -220,6 +232,68 @@ document.addEventListener('click', async (event) => {
         updateHudUI("🗑️ Memori dihapus.", true);
         return;
     }
+
+    if (event.target && event.target.id === 'ai-btn-save') {
+        const screen = document.getElementById('ai-result-screen');
+        const resultText = screen.innerText;
+        if (resultText.length < 50 || resultText.includes('READY')) {
+            updateHudUI("⚠️ Tidak ada hasil untuk disimpan!", true);
+            return;
+        }
+        
+        const saveData = {
+            id: Date.now(),
+            waktu: new Date().toLocaleString(),
+            hasil: resultText
+        };
+        
+        savedAnalysis.push(saveData);
+        
+        chrome.storage.local.set({ groqSavedAnalysis: savedAnalysis }, () => {
+            updateHudUI(`💾 Disimpan! (${savedAnalysis.length} hasil)`, true);
+        });
+        return;
+    }
+
+    if (event.target && event.target.id === 'ai-btn-history') {
+        const panel = document.getElementById('ai-history-panel');
+        
+        if (panel.style.display === 'none') {
+            chrome.storage.local.get(['groqSavedAnalysis'], (res) => {
+                savedAnalysis = res.groqSavedAnalysis || [];
+                if (savedAnalysis.length === 0) {
+                    panel.innerHTML = '<div style="color:#fbbf24">📭 Belum ada hasil tersimpan.</div>';
+                } else {
+                    let html = '<div style="font-size:10px; font-weight:bold; margin-bottom:5px; color:#fbbf24;">📁 HISTORY (' + savedAnalysis.length + '):</div>';
+                    savedAnalysis.slice().reverse().forEach((item, idx) => {
+                        let matchName = item.hasil.match(/MATCH:\s*(.+)/)?.[1] || 'Match ' + (savedAnalysis.length - idx);
+                        let prediksi = item.hasil.match(/PREDIKSI:\s*(.+)/)?.[1] || '';
+                        let risk = item.hasil.match(/RISK:\s*(.+)/)?.[1] || '';
+                        
+                        html += `<div style="background:#374151; padding:5px; margin:3px 0; border-radius:3px; cursor:pointer;" onclick="loadHistory(${item.id})">
+                            <div style="color:#fbbf24; font-size:10px;">${item.waktu}</div>
+                            <div style="color:#10b981; font-size:11px;">${matchName.substring(0,40)}</div>
+                            <div style="color:#9ca3af; font-size:10px;">${prediksi.substring(0,50)} | ${risk}</div>
+                        </div>`;
+                    });
+                }
+                panel.innerHTML = html;
+                panel.style.display = 'block';
+            });
+        } else {
+            panel.style.display = 'none';
+        }
+        return;
+    }
+
+    window.loadHistory = function(id) {
+        const item = savedAnalysis.find(s => s.id === id);
+        if (item) {
+            document.getElementById('ai-result-screen').innerText = item.hasil;
+            document.getElementById('ai-history-panel').style.display = 'none';
+            updateHudUI("📜 Hasil dimuat dari history.", true);
+        }
+    };
 
     if (event.target && event.target.id === 'ai-btn-export') {
         const screen = document.getElementById('ai-result-screen');
