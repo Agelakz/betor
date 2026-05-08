@@ -68,6 +68,11 @@ async function analyzeWithAPI(key, data, provider) {
         body = {model: "Meta-Llama-3.1-70B-Instruct", messages: [{role: "user", content: getPrompt() + "\n\n" + data}]};
         modelName = "Llama-3.1-70B";
         headers["Authorization"] = "Bearer " + key;
+    } else if (provider === "cerebras") {
+        url = "https://api.cerebras.ai/v1/chat/completions";
+        body = {model: "llama-3.1-70b-instruct", messages: [{role: "user", content: getPrompt() + "\n\n" + data}], temperature: 0.1, max_tokens: 3000};
+        modelName = "Llama-3.1-70B";
+        headers["Authorization"] = "Bearer " + key;
     } else {
         url = "https://api.groq.com/openai/v1/chat/completions";
         body = {model: "llama-3.3-70b-versatile", temperature: 0.1, messages: [{role: "user", content: getPrompt() + "\n\n" + data}]};
