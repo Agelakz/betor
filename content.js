@@ -66,12 +66,12 @@ async function analyzeWithAPI(key, data, provider) {
     } else if (provider === "together") {
         url = "https://api.together.ai/v1/chat/completions";
         body = {model: "Meta-Llama-3.1-70B-Instruct", messages: [{role: "user", content: getPrompt() + "\n\n" + data}]};
-        modelName = "Llama-3.1-70B";
+        modelName = "Qwen-3-235B";
         headers["Authorization"] = "Bearer " + key;
     } else if (provider === "cerebras") {
         url = "https://api.cerebras.ai/v1/chat/completions";
-        body = {model: "llama-3.1-70b-instruct", messages: [{role: "user", content: getPrompt() + "\n\n" + data}], temperature: 0.1, max_tokens: 3000};
-        modelName = "Llama-3.1-70B";
+        body = {model: "qwen-3-235b-a22b-instruct-2507", temperature: 0.67, top_p: 0.8, max_tokens: 3000, messages: [{role: "user", content: getPrompt() + "\n\n" + data}]};
+        modelName = "Qwen-3-235B";
         headers["Authorization"] = "Bearer " + key;
     } else {
         url = "https://api.groq.com/openai/v1/chat/completions";
